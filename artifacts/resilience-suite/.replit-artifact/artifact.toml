@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI Resilience Prototype Suite"
+description = "Three interconnected AI-powered prototypes — Farm Intelligence, Data Center Energy Hub, and Resilience Simulator — sharing a common AI analysis engine that converts complex environmental, infrastructure, and economic inputs into actionable infrastructure decisions."
+version = "1.0.0"
+id = "artifacts/resilience-suite"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25933
+
+[services.development]
+run = "pnpm --filter @workspace/resilience-suite run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/resilience-suite", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/resilience-suite/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25933"
+BASE_PATH = "/"
