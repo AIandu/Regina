@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AI-Guided Resilience Prototype Suite API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: analyze
+    description: AI analysis engine operations
+  - name: analyses
+    description: Analysis history and governance
 paths:
   /healthz:
     get:
@@ -24,13 +28,438 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /analyze/farm:
+    post:
+      operationId: analyzeFarm
+      tags: [analyze]
+      summary: Run Farm Intelligence analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmInput"
+      responses:
+        "200":
+          description: Farm analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnalysis"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analyze/datacenter:
+    post:
+      operationId: analyzeDatacenter
+      tags: [analyze]
+      summary: Run Data Center Energy Hub analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatacenterInput"
+      responses:
+        "200":
+          description: Datacenter analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatacenterAnalysis"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analyze/resilience:
+    post:
+      operationId: analyzeResilience
+      tags: [analyze]
+      summary: Run Resilience Simulator analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResilienceInput"
+      responses:
+        "200":
+          description: Resilience analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResilienceAnalysis"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analyses:
+    get:
+      operationId: listAnalyses
+      tags: [analyses]
+      summary: List analysis history
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of analysis summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalysisSummary"
+
+  /analyses/stats:
+    get:
+      operationId: getAnalysisStats
+      tags: [analyses]
+      summary: Get analysis statistics dashboard
+      responses:
+        "200":
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisStats"
+
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      tags: [analyses]
+      summary: Get full analysis by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Full analysis record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analyses/{id}/approve:
+    post:
+      operationId: approveAnalysis
+      tags: [analyses]
+      summary: Human approval checkpoint for an analysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Updated analysis record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    FarmInput:
+      type: object
+      required: [country, region, climate, soil, water, population]
+      properties:
+        country:
+          type: string
+          description: Target country for farm placement
+        region:
+          type: string
+          description: Geographic region or province
+        climate:
+          type: string
+          description: Climate type (e.g. arid, tropical, temperate)
+        soil:
+          type: string
+          description: Soil quality and composition description
+        water:
+          type: string
+          description: Water availability (e.g. river nearby, annual rainfall mm)
+        population:
+          type: string
+          description: Nearby population size and density
+
+    FarmResult:
+      type: object
+      required: [recommendedLocation, cropStrategy, waterDesign, energyRequirements, foodProductionEstimate, confidenceScore, reasoning, locationScore]
+      properties:
+        recommendedLocation:
+          type: string
+        cropStrategy:
+          type: string
+        waterDesign:
+          type: string
+        energyRequirements:
+          type: string
+        foodProductionEstimate:
+          type: string
+        confidenceScore:
+          type: number
+        locationScore:
+          type: number
+        reasoning:
+          type: string
+        riskFactors:
+          type: ["string", "null"]
+
+    FarmAnalysis:
+      type: object
+      required: [id, inputs, result, status, createdAt]
+      properties:
+        id:
+          type: number
+        inputs:
+          $ref: "#/components/schemas/FarmInput"
+        result:
+          $ref: "#/components/schemas/FarmResult"
+        status:
+          type: string
+        createdAt:
+          type: string
+        approvalNotes:
+          type: ["string", "null"]
+
+    DatacenterInput:
+      type: object
+      required: [powerAvailability, climate, communityNeeds, industrialDemand]
+      properties:
+        powerAvailability:
+          type: string
+          description: Available power capacity and source (e.g. 500MW grid, renewable mix)
+        climate:
+          type: string
+          description: Local climate conditions affecting cooling needs
+        communityNeeds:
+          type: string
+          description: Nearby community infrastructure and needs
+        industrialDemand:
+          type: string
+          description: Industrial and commercial demand for compute/energy
+
+    DatacenterResult:
+      type: object
+      required: [locationRecommendation, coolingArchitecture, heatRecoveryDesign, thermalReuseOptions, energyImpactReport, confidenceScore, reasoning, pueEstimate]
+      properties:
+        locationRecommendation:
+          type: string
+        coolingArchitecture:
+          type: string
+        heatRecoveryDesign:
+          type: string
+        thermalReuseOptions:
+          type: string
+        energyImpactReport:
+          type: string
+        confidenceScore:
+          type: number
+        pueEstimate:
+          type: number
+          description: Power Usage Effectiveness estimate
+        reasoning:
+          type: string
+        riskFactors:
+          type: ["string", "null"]
+
+    DatacenterAnalysis:
+      type: object
+      required: [id, inputs, result, status, createdAt]
+      properties:
+        id:
+          type: number
+        inputs:
+          $ref: "#/components/schemas/DatacenterInput"
+        result:
+          $ref: "#/components/schemas/DatacenterResult"
+        status:
+          type: string
+        createdAt:
+          type: string
+        approvalNotes:
+          type: ["string", "null"]
+
+    ResilienceInput:
+      type: object
+      required: [country, environmentalConstraints, infrastructureInfo]
+      properties:
+        country:
+          type: string
+          description: Target country or region
+        environmentalConstraints:
+          type: string
+          description: Environmental risks and limitations (drought, floods, etc.)
+        infrastructureInfo:
+          type: string
+          description: Current infrastructure state and capacity
+
+    ResilienceResult:
+      type: object
+      required: [blueprint, riskScenarios, deploymentPhases, explanation, confidenceScore, overallResilienceScore]
+      properties:
+        blueprint:
+          type: string
+        riskScenarios:
+          type: string
+        deploymentPhases:
+          type: string
+        explanation:
+          type: string
+        confidenceScore:
+          type: number
+        overallResilienceScore:
+          type: number
+        priorityActions:
+          type: ["string", "null"]
+
+    ResilienceAnalysis:
+      type: object
+      required: [id, inputs, result, status, createdAt]
+      properties:
+        id:
+          type: number
+        inputs:
+          $ref: "#/components/schemas/ResilienceInput"
+        result:
+          $ref: "#/components/schemas/ResilienceResult"
+        status:
+          type: string
+        createdAt:
+          type: string
+        approvalNotes:
+          type: ["string", "null"]
+
+    AnalysisSummary:
+      type: object
+      required: [id, type, title, status, createdAt, confidenceScore]
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+          description: "farm | datacenter | resilience"
+        title:
+          type: string
+          description: Human-readable summary title
+        status:
+          type: string
+          description: "pending | approved | rejected"
+        createdAt:
+          type: string
+        confidenceScore:
+          type: number
+        approvalNotes:
+          type: ["string", "null"]
+
+    AnalysisDetail:
+      type: object
+      required: [id, type, title, status, createdAt, inputs, result]
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        inputs: {}
+        result: {}
+        approvalNotes:
+          type: ["string", "null"]
+
+    AnalysisStats:
+      type: object
+      required: [total, byType, byStatus, recentCount, avgConfidenceScore]
+      properties:
+        total:
+          type: number
+        byType:
+          type: object
+          additionalProperties:
+            type: number
+        byStatus:
+          type: object
+          additionalProperties:
+            type: number
+        recentCount:
+          type: number
+          description: Analyses in the last 7 days
+        avgConfidenceScore:
+          type: number
+
+    ApprovalInput:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        notes:
+          type: ["string", "null"]

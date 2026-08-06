@@ -1,32 +1,39 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import NotFound from '@/pages/not-found';
 import { Route, Switch, Router as WouterRouter } from 'wouter';
 
-const queryClient = new QueryClient();
+import { Layout } from '@/components/layout';
+import Home from '@/pages/home';
+import FarmPage from '@/pages/farm';
+import DatacenterPage from '@/pages/datacenter';
+import ResiliencePage from '@/pages/resilience';
+import HistoryPage from '@/pages/history';
+import HistoryDetailPage from '@/pages/history-detail';
+import NotFound from '@/pages/not-found';
 
-function Home() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
-    </div>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
+  }
+});
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route component={NotFound} />
-    </Switch>
+    <Layout>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/farm" component={FarmPage} />
+        <Route path="/datacenter" component={DatacenterPage} />
+        <Route path="/resilience" component={ResiliencePage} />
+        <Route path="/history" component={HistoryPage} />
+        <Route path="/history/:id" component={HistoryDetailPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 
