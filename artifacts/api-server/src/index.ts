@@ -15,11 +15,12 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
+// 🟢 FIX: Wrap port and host in a configuration object for Fastify compatibility
+app.listen({ port: port, host: "0.0.0.0" }, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
   }
 
-  logger.info({ port }, "Server listening");
+  logger.info({ port }, "Server listening on 0.0.0.0");
 });
