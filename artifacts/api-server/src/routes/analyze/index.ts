@@ -155,6 +155,7 @@ Ensure confidenceScore is 0.0-1.0, pueEstimate is typically 1.1-2.0. Be technica
 
 // POST /analyze/resilience
 router.post("/analyze/resilience", async (req, res): Promise<void> => {
+  console.log("🔥 RESILIENCE ROUTE HIT");
   const parsed = AnalyzeResilienceBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
