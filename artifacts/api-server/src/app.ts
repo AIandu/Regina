@@ -32,3 +32,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
 export default app;
+// 🟢 ADD THIS TO THE VERY BOTTOM OF artifacts/api-server/src/app.ts (Before export default app)
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("🚨 CRITICAL BACKEND CRASH DETECTED:");
+  console.error(err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: err.message || "Internal Server Error" });
+  }
+});
+
+export default app;
