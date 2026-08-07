@@ -31,8 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-export default app;
-// 🟢 ADD THIS TO THE VERY BOTTOM OF artifacts/api-server/src/app.ts (Before export default app)
+// 🟢 The error catching middleware we added
 app.use((err: any, req: any, res: any, next: any) => {
   console.error("🚨 CRITICAL BACKEND CRASH DETECTED:");
   console.error(err);
@@ -41,4 +40,5 @@ app.use((err: any, req: any, res: any, next: any) => {
   }
 });
 
+// 🟢 ONLY ONE EXPORT AT THE VERY BOTTOM
 export default app;
