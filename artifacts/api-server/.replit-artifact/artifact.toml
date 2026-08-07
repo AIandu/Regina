@@ -24,9 +24,17 @@ NODE_ENV = "production"
 # we don't run through pnpm to make startup faster in production
 args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
 
+[services.production.run]
+# we don't run through pnpm to make startup faster in production
+args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+
 [services.production.run.env]
-PORT = "10000"     # 🟢 Changed to "10000" to match Render's web service default
+PORT = "10000"
 NODE_ENV = "production"
+# 🟢 FIX: Map Render dashboard environment variables into the isolated runner instance
+DATABASE_URL = "${DATABASE_URL}"
+OPENAI_API_KEY = "${OPENAI_API_KEY}"
+
 
 [services.production.health.startup]
 path = "/api/healthz"
