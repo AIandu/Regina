@@ -1,30 +1,58 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { logger } from "./logger";
-
-// The user's Gemini API key is stored under OPENAI_API_KEY
 const apiKey = process.env.OPENAI_API_KEY;
 
 if (!apiKey) {
-  logger.warn("OPENAI_API_KEY (Gemini key) is not set — AI analysis will fail");
+  console.warn("OPENAI_API_KEY is not set — AI analysis will fail");
 }
 
-export const genAI = new GoogleGenerativeAI(apiKey ?? "");
-
-export async function runGeminiJSON<T>(prompt: string): Promise<T> {
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    generationConfig: {
-      responseMimeType: "application/json",
-      maxOutputTokens: 8192,
-    },
-  });
-
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new Error(`Gemini returned invalid JSON: ${text.slice(0, 200)}`);
+export async function runGeminiJSON<T>(
+  systemPrompt: string,
+  userPrompt: string
+): Promise<T> {
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not configured");
   }
+
+  const response = await fetch(
+    "https://api.openai.com/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-5.6",
+        messages: [
+          {
+            role: "system",
+            content:
+              systemPrompt +
+              "\nReturn only valid JSON. Do not use markdown code fences.",
+          },
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `OpenAI API error ${response.status}: ${errorText}`
+    );
+  }
+
+  const data = await response.json();
+
+  const text = data.choices?.[0]?.message?.content;
+
+  if (!text) {
+    throw new Error("OpenAI returned an empty response");
+  }
+
+  return JSON.parse(text) as T;
 }
