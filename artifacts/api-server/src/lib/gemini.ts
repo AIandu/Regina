@@ -30,9 +30,9 @@ export async function runGeminiJSON<T>(
               "\nReturn only valid JSON. Do not use markdown code fences.",
           },
           {
-            role: "user",
-            content: userPrompt,
-          },
+  role: "user",
+  content: userPrompt ?? systemPrompt ?? "Analyze the provided data and return valid JSON.",
+},
         ],
         response_format: { type: "json_object" },
       }),
