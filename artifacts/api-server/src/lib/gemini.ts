@@ -4,10 +4,7 @@ if (!apiKey) {
   console.warn("OPENAI_API_KEY is not set — AI analysis will fail");
 }
 
-export async function runGeminiJSON<T>(
-  systemPrompt: string,
-  userPrompt: string
-): Promise<T> {
+export async function runGeminiJSON<T>(prompt: string): Promise<T> {
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not configured");
   }
@@ -26,13 +23,12 @@ export async function runGeminiJSON<T>(
           {
             role: "system",
             content:
-              systemPrompt +
-              "\nReturn only valid JSON. Do not use markdown code fences.",
+              "You are an expert infrastructure analysis AI. Return only valid JSON. Do not use markdown code fences.",
           },
           {
-  role: "user",
-  content: userPrompt ?? systemPrompt ?? "Analyze the provided data and return valid JSON.",
-},
+            role: "user",
+            content: prompt,
+          },
         ],
         response_format: { type: "json_object" },
       }),
@@ -47,7 +43,6 @@ export async function runGeminiJSON<T>(
   }
 
   const data = await response.json();
-
   const text = data.choices?.[0]?.message?.content;
 
   if (!text) {
